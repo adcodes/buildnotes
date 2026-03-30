@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Buildnotes</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,400;0,500;1,400&family=Syne:wght@400;600;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0c0c0f;
+      --bg-raised: #131316;
+      --bg-card: #16161a;
+      --bg-hover: #1c1c21;
+      --border: #232328;
+      --border-light: #2a2a30;
+      --text: #ececf0;
+      --text-secondary: #a0a0ab;
+      --text-muted: #55555f;
+      --accent: #60a5fa;
+      --accent-glow: rgba(96, 165, 250, 0.08);
+      --accent-dim: rgba(96, 165, 250, 0.15);
+      --font-mono: 'DM Mono', monospace;
+      --font-display: 'Syne', sans-serif;
+      --radius: 8px;
+      --max-width: 660px;
+    }
+
+    html, body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-display);
+      font-size: 15px;
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+
+    #app {
+      max-width: var(--max-width);
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    /* ── Header ── */
+    header {
+      padding: 56px 0 48px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 40px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+    }
+
+    .logo {
+      font-family: var(--font-mono);
+      font-size: 1.1rem;
+      font-weight: 500;
+      color: var(--accent);
+      letter-spacing: -0.03em;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .logo:hover { opacity: 0.8; }
+
+    .header-tag {
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      color: var(--text-muted);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 4px 10px;
+      border: 1px solid var(--border-light);
+      border-radius: 20px;
+    }
+
+    /* ── Search ── */
+    .search-wrap {
+      position: relative;
+      margin-bottom: 8px;
+    }
+
+    #search-input {
+      width: 100%;
+      background: var(--bg-raised);
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius);
+      color: var(--text);
+      font-family: var(--font-display);
+      font-size: 1rem;
+      font-weight: 400;
+      padding: 16px 48px 16px 20px;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    #search-input::placeholder { color: var(--text-muted); }
+
+    #search-input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-glow);
+    }
+
+    .search-count {
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      text-align: right;
+      padding: 6px 4px 24px;
+      letter-spacing: 0.04em;
+    }
+
+    /* ── Results ── */
+    #results {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .result-item {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      align-items: center;
+      gap: 16px;
+      padding: 16px 20px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      cursor: pointer;
+      transition: background 0.12s, border-color 0.12s, transform 0.1s;
+    }
+
+    .result-item:hover {
+      background: var(--bg-hover);
+      border-color: var(--border-light);
+      transform: translateX(2px);
+    }
+
+    .result-title {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--text);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      letter-spacing: -0.01em;
+    }
+
+    .result-meta {
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      margin-top: 3px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      letter-spacing: 0.02em;
+    }
+
+    .result-right {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 4px;
+      flex-shrink: 0;
+    }
+
+    .result-rating {
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      font-weight: 500;
+      color: var(--accent);
+    }
+
+    .result-year {
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      color: var(--text-muted);
+    }
+
+    /* ── State messages ── */
+    .state-message {
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      padding: 56px 0;
+      text-align: center;
+      letter-spacing: 0.03em;
+    }
+
+    /* ── Detail view ── */
+    #detail {
+      display: none;
+      animation: fadeUp 0.18s ease;
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .back-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      cursor: pointer;
+      margin-bottom: 40px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      background: none;
+      border: none;
+      padding: 0;
+      transition: color 0.1s;
+    }
+
+    .back-btn:hover { color: var(--accent); }
+
+    .detail-header {
+      margin-bottom: 32px;
+      padding-bottom: 32px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .detail-title {
+      font-size: 2rem;
+      font-weight: 700;
+      line-height: 1.15;
+      letter-spacing: -0.03em;
+      margin-bottom: 16px;
+    }
+
+    .detail-badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .badge {
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      letter-spacing: 0.04em;
+      padding: 4px 10px;
+      border-radius: 4px;
+      border: 1px solid var(--border-light);
+      color: var(--text-secondary);
+    }
+
+    .badge-accent {
+      color: var(--accent);
+      background: var(--accent-dim);
+      border-color: transparent;
+    }
+
+    /* ── Info table ── */
+    .info-table {
+      margin-bottom: 32px;
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+
+    .info-row {
+      display: grid;
+      grid-template-columns: 130px 1fr;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .info-row:last-child { border-bottom: none; }
+
+    .info-label {
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      text-transform: uppercase;
+      letter-spacing: 0.09em;
+      color: var(--text-muted);
+      background: var(--bg-raised);
+      padding: 13px 18px;
+      display: flex;
+      align-items: center;
+    }
+
+    .info-value {
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+      background: var(--bg-card);
+      padding: 13px 18px;
+      display: flex;
+      align-items: center;
+      line-height: 1.5;
+    }
+
+    /* ── Summary ── */
+    .detail-summary {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      line-height: 1.8;
+    }
+
+    .detail-summary-label {
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      text-transform: uppercase;
+      letter-spacing: 0.09em;
+      color: var(--text-muted);
+      margin-bottom: 12px;
+      opacity: 0.6;
+    }
+
+    /* ── Footer ── */
+    footer {
+      margin-top: 80px;
+      padding-bottom: 48px;
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      color: var(--text-muted);
+      letter-spacing: 0.06em;
+      display: flex;
+      justify-content: space-between;
+      border-top: 1px solid var(--border);
+      padding-top: 20px;
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 500px) {
+      header { padding: 36px 0 32px; }
+      .detail-title { font-size: 1.5rem; }
+      .info-table { grid-template-columns: 100px 1fr; }
+    }
+  </style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <span class="logo" id="logo">buildnotes</span>
+    <span class="header-tag">PS5</span>
+  </header>
+
+  <div id="search-view">
+    <div class="search-wrap">
+      <input id="search-input" type="text" placeholder="Search games…" autocomplete="off" spellcheck="false" />
+    </div>
+    <div class="search-count" id="search-count"></div>
+    <div id="results">
+      <div class="state-message">— start typing —</div>
+    </div>
+  </div>
+
+  <div id="detail"></div>
+
+  <footer>
+    <span id="footer-left">buildnotes</span>
+    <span id="footer-right"></span>
+  </footer>
+</div>
+
+<script>
+  let games = [];
+
+  fetch('data.json')
+    .then(r => r.json())
+    .then(data => {
+      games = data.games;
+      document.getElementById('footer-left').textContent = 'buildnotes';
+      document.getElementById('footer-right').textContent = `${games.length.toLocaleString()} games · ${data.last_updated}`;
+      document.getElementById('search-count').textContent = `${games.length.toLocaleString()} ps5 games`;
+      router();
+    });
+
+  const searchInput = document.getElementById('search-input');
+  const resultsEl   = document.getElementById('results');
+  const countEl     = document.getElementById('search-count');
+
+  searchInput.addEventListener('input', () => {
+    const q = searchInput.value.trim();
+    if (!q) {
+      resultsEl.innerHTML = `<div class="state-message">— start typing —</div>`;
+      countEl.textContent = `${games.length.toLocaleString()} ps5 games`;
+      return;
+    }
+    const matches = search(q, 10);
+    countEl.textContent = matches.length
+      ? `${matches.length} result${matches.length === 1 ? '' : 's'}`
+      : '';
+    renderResults(matches, q);
+  });
+
+  function search(query, limit) {
+    const q = query.toLowerCase();
+    return games
+      .filter(g => g.title && g.title.toLowerCase().includes(q))
+      .slice(0, limit);
+  }
+
+  function renderResults(matches, query) {
+    if (!matches.length) {
+      resultsEl.innerHTML = `<div class="state-message">no results for "${esc(query)}"</div>`;
+      return;
+    }
+    resultsEl.innerHTML = matches.map(g => `
+      <div class="result-item" onclick="navigateTo('game',${g.id})">
+        <div style="min-width:0">
+          <div class="result-title">${esc(g.title)}</div>
+          <div class="result-meta">${esc(g.developers[0] || g.publishers[0] || '—')}</div>
+        </div>
+        <div class="result-right">
+          ${g.rating    ? `<div class="result-rating">${g.rating}</div>` : ''}
+          ${g.release_date ? `<div class="result-year">${g.release_date.slice(0,4)}</div>` : ''}
+        </div>
+      </div>
+    `).join('');
+  }
+
+  function renderDetail(id) {
+    const game = games.find(g => g.id === id);
+    if (!game) return showSearch();
+
+    document.title = `${game.title} — buildnotes`;
+
+    const rows = [
+      ['Released',  game.release_date || null],
+      ['Developer', game.developers.length ? game.developers.join(', ') : null],
+      ['Publisher', game.publishers.length ? game.publishers.join(', ') : null],
+      ['Platforms', game.platforms.length  ? game.platforms.join(', ')  : null],
+      ['Genres',    game.genres.length     ? game.genres.join(', ')     : null],
+    ].filter(([, v]) => v);
+
+    const genres = game.genres.slice(0, 3);
+
+    document.getElementById('detail').innerHTML = `
+      <button class="back-btn" onclick="navigateTo('search')">← back to search</button>
+      <div class="detail-header">
+        <div class="detail-title">${esc(game.title)}</div>
+        <div class="detail-badges">
+          ${game.rating ? `<span class="badge badge-accent">rated ${game.rating}</span>` : ''}
+          ${game.release_date ? `<span class="badge">${game.release_date.slice(0,4)}</span>` : ''}
+          ${genres.map(g => `<span class="badge">${esc(g)}</span>`).join('')}
+        </div>
+      </div>
+      <div class="info-table">
+        ${rows.map(([label, value]) => `
+          <div class="info-row">
+            <div class="info-label">${label}</div>
+            <div class="info-value">${esc(value)}</div>
+          </div>
+        `).join('')}
+      </div>
+      ${game.summary ? `
+        <div>
+          <div class="detail-summary-label">Summary</div>
+          <div class="detail-summary">${esc(game.summary)}</div>
+        </div>
+      ` : ''}
+    `;
+
+    showDetail();
+  }
+
+  function showSearch() {
+    document.getElementById('search-view').style.display = '';
+    document.getElementById('detail').style.display = 'none';
+    document.title = 'buildnotes';
+  }
+
+  function showDetail() {
+    document.getElementById('search-view').style.display = 'none';
+    document.getElementById('detail').style.display = 'block';
+  }
+
+  function navigateTo(view, id) {
+    window.location.hash = view === 'search' ? '' : `/game/${id}`;
+  }
+
+  function router() {
+    const match = window.location.hash.match(/^#\/game\/(\d+)$/);
+    match ? renderDetail(parseInt(match[1])) : showSearch();
+  }
+
+  window.addEventListener('hashchange', router);
+  document.getElementById('logo').addEventListener('click', () => navigateTo('search'));
+
+  function esc(str) {
+    if (!str) return '';
+    return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+</script>
+</body>
+</html>
