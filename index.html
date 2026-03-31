@@ -19,7 +19,6 @@
       --text: #ececf0;
       --text-secondary: #c0c0c8;
       --text-muted: #8a8a96;
-      --text-faint: #8a8a96;
       --accent: #60a5fa;
       --accent-glow: rgba(96, 165, 250, 0.08);
       --accent-dim: rgba(96, 165, 250, 0.15);
@@ -36,12 +35,15 @@
       font-size: 15px;
       line-height: 1.6;
       min-height: 100vh;
+      overflow-x: hidden;
+      width: 100%;
     }
 
     #app {
       max-width: var(--max-width);
       margin: 0 auto;
       padding: 0 24px;
+      width: 100%;
     }
 
     /* ── Header ── */
@@ -62,6 +64,7 @@
       letter-spacing: -0.03em;
       cursor: pointer;
       user-select: none;
+      touch-action: manipulation;
     }
 
     .logo:hover { opacity: 0.8; }
@@ -86,6 +89,7 @@
       cursor: pointer;
       transition: all 0.12s;
       user-select: none;
+      touch-action: manipulation;
     }
 
     .lozenge:hover {
@@ -114,9 +118,10 @@
       font-family: var(--font-display);
       font-size: 1rem;
       font-weight: 400;
-      padding: 16px 48px 16px 20px;
+      padding: 16px 20px;
       outline: none;
       transition: border-color 0.2s, box-shadow 0.2s;
+      -webkit-appearance: none;
     }
 
     #search-input::placeholder { color: var(--text-muted); }
@@ -162,13 +167,17 @@
       border: 1px solid var(--border);
       border-radius: var(--radius);
       cursor: pointer;
-      transition: background 0.12s, border-color 0.12s, transform 0.1s;
+      touch-action: manipulation;
+      transition: background 0.12s, border-color 0.12s;
+      width: 100%;
     }
 
-    .result-item:hover {
-      background: var(--bg-hover);
-      border-color: var(--border-light);
-      transform: translateX(2px);
+    @media (hover: hover) {
+      .result-item:hover {
+        background: var(--bg-hover);
+        border-color: var(--border-light);
+        transform: translateX(2px);
+      }
     }
 
     .result-title {
@@ -239,6 +248,7 @@
       border: none;
       padding: 0;
       transition: color 0.1s;
+      touch-action: manipulation;
     }
 
     .back-btn:hover { color: var(--accent); }
@@ -318,6 +328,7 @@
       display: flex;
       align-items: center;
       line-height: 1.5;
+      word-break: break-word;
     }
 
     .info-value a {
@@ -327,7 +338,7 @@
 
     .info-value a:hover { text-decoration: underline; }
 
-    /* ── Summary ── */
+    /* ── Summary / Notes ── */
     .detail-summary-label {
       font-family: var(--font-mono);
       font-size: 0.68rem;
@@ -360,7 +371,9 @@
     @media (max-width: 500px) {
       header { padding: 36px 0 32px; }
       .detail-title { font-size: 1.5rem; }
-      .info-row { grid-template-columns: 100px 1fr; }
+      .info-row { grid-template-columns: 90px 1fr; }
+      .info-label { padding: 11px 12px; font-size: 0.62rem; }
+      .info-value { padding: 11px 12px; }
     }
   </style>
 </head>
@@ -487,7 +500,6 @@
 
     document.title = `${game.title} — buildnotes`;
     const custom = customData[String(id)] || {};
-    const mobyUrl = `https://www.mobygames.com/search/?q=${encodeURIComponent(game.title)}`;
 
     const rows = [
       ['Released',  game.release_date || null],
@@ -495,14 +507,15 @@
       ['Publisher', game.publishers.length ? game.publishers.join(', ') : null],
       ['Platforms', game.platforms.length  ? game.platforms.join(', ')  : null],
       ['Genres',    game.genres.length     ? game.genres.join(', ')     : null],
-      ['MobyGames', `<a href="${mobyUrl}" target="_blank" rel="noopener">View on MobyGames ↗</a>`],
     ].filter(([, v]) => v);
 
-    const customLinks = (custom.links || []).map(l =>
-      `<a href="${esc(l.url)}" target="_blank" rel="noopener">${esc(l.label)} ↗</a>`
-    ).join('  ·  ');
-
-    if (customLinks) rows.push(['Links', customLinks]);
+    // Custom links from custom.json only
+    if (custom.links && custom.links.length) {
+      const linkHtml = custom.links.map(l =>
+        `<a href="${esc(l.url)}" target="_blank" rel="noopener">${esc(l.label)} ↗</a>`
+      ).join('  ·  ');
+      rows.push(['Links', linkHtml]);
+    }
 
     const genres = game.genres.slice(0, 3);
 
