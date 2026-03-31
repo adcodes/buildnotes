@@ -181,10 +181,10 @@
       color: var(--text-muted);
       font-family: var(--font-mono);
       font-size: 0.78rem;
-      padding: 48px 0 52px;
+      padding: 56px 0 64px;
       text-align: center;
       letter-spacing: 0.03em;
-      line-height: 2;
+      line-height: 2.5;
     }
 
     /* ── Results ── */
@@ -192,6 +192,7 @@
       display: flex;
       flex-direction: column;
       gap: 3px;
+      overflow: visible;
     }
 
     #results.fade-in {
@@ -209,7 +210,6 @@
       align-items: center;
       gap: 16px;
       padding: 16px 20px;
-      background: var(--bg-card);
       border: 1px solid var(--border);
       border-radius: var(--radius);
       cursor: pointer;
@@ -217,6 +217,9 @@
       transition: background 0.12s, border-color 0.12s;
       width: 100%;
     }
+
+    .result-item:nth-child(odd)  { background: var(--bg-card); }
+    .result-item:nth-child(even) { background: var(--bg-card-alt); }
 
     @media (hover: hover) {
       .result-item:hover {
@@ -278,16 +281,6 @@
     /* ── Detail view ── */
     #detail {
       display: none;
-    }
-
-    #detail.visible {
-      display: block;
-      animation: fadeUp 0.18s ease;
-    }
-
-    @keyframes fadeUp {
-      from { opacity: 0; transform: translateY(8px); }
-      to   { opacity: 1; transform: translateY(0); }
     }
 
     /* ── Back button ── */
@@ -402,6 +395,10 @@
     .info-value a:hover { text-decoration: underline; }
 
     /* ── Summary / Notes ── */
+    .detail-section {
+      margin-bottom: 32px;
+    }
+
     .detail-summary-label {
       font-family: var(--font-mono);
       font-size: 0.68rem;
@@ -451,7 +448,7 @@
 
   <div id="search-view">
     <div class="platforms-wrap">
-      <div class="platforms">
+      <div class="platforms" id="platforms">
         <span class="lozenge active" data-platform="">All</span>
         <span class="lozenge" data-platform="PlayStation 5">PS5</span>
         <span class="lozenge" data-platform="PlayStation 4">PS4</span>
@@ -492,6 +489,9 @@
       `${games.length.toLocaleString()} games · ${data.last_updated}`;
     updateCount();
     router();
+  }).catch(() => {
+    document.getElementById('results').innerHTML =
+      `<div class="state-message">failed to load game data</div>`;
   });
 
   document.querySelectorAll('.lozenge').forEach(el => {
@@ -525,13 +525,15 @@
     if (!q) {
       document.getElementById('results').innerHTML =
         `<div class="state-message">type a game title to begin</div>`;
+      document.getElementById('search-count').textContent =
+        `${pool.length.toLocaleString()} games`;
       return;
     }
 
     const matches = search(q, pool, 10);
     document.getElementById('search-count').textContent = matches.length
       ? `${matches.length} result${matches.length === 1 ? '' : 's'}`
-      : '';
+      : 'no results';
     renderResults(matches, q);
   }
 
@@ -576,10 +578,10 @@
 
     const rows = [
       ['Released',  game.release_date || null],
-      ['Developer', game.developers.length ? game.developers.join(', ') : null],
-      ['Publisher', game.publishers.length ? game.publishers.join(', ') : null],
-      ['Platforms', game.platforms.length  ? game.platforms.join(', ')  : null],
-      ['Genres',    game.genres.length     ? game.genres.join(', ')     : null],
+      ['Developer', (game.developers || []).length ? game.developers.join(', ') : null],
+      ['Publisher', (game.publishers || []).length ? game.publishers.join(', ') : null],
+      ['Platforms', (game.platforms  || []).length ? game.platforms.join(', ')  : null],
+      ['Genres',    (game.genres     || []).length ? game.genres.join(', ')     : null],
     ].filter(([, v]) => v);
 
     if (custom.links && custom.links.length) {
@@ -589,9 +591,10 @@
       rows.push(['Links', linkHtml]);
     }
 
-    const genres = game.genres.slice(0, 3);
+    const genres = (game.genres || []).slice(0, 3);
 
-    document.getElementById('detail').innerHTML = `
+    const detailEl = document.getElementById('detail');
+    detailEl.innerHTML = `
       <button class="back-btn" onclick="navigateTo('search')">← back to search</button>
       <div class="detail-header">
         <div class="detail-title">${esc(game.title)}</div>
@@ -610,13 +613,13 @@
         `).join('')}
       </div>
       ${custom.notes ? `
-        <div style="margin-bottom:32px">
+        <div class="detail-section">
           <div class="detail-summary-label">Notes</div>
           <div class="detail-summary">${esc(custom.notes)}</div>
         </div>
       ` : ''}
       ${game.summary ? `
-        <div>
+        <div class="detail-section">
           <div class="detail-summary-label">Summary</div>
           <div class="detail-summary">${esc(game.summary)}</div>
         </div>
@@ -628,18 +631,25 @@
 
   function showSearch() {
     document.getElementById('search-view').style.display = '';
-    const detail = document.getElementById('detail');
-    detail.classList.remove('visible');
-    detail.style.display = 'none';
+    document.getElementById('detail').style.display = 'none';
     document.title = 'buildnotes';
+
+    // Reset search input and results
+    searchInput.value = '';
+    document.getElementById('results').innerHTML =
+      `<div class="state-message">type a game title to begin</div>`;
+
+    // Reset lozenge to All
+    activePlatform = '';
+    document.querySelectorAll('.lozenge').forEach(l => l.classList.remove('active'));
+    document.querySelector('.lozenge[data-platform=""]').classList.add('active');
+    updateCount();
   }
 
   function showDetail() {
     document.getElementById('search-view').style.display = 'none';
-    const detail = document.getElementById('detail');
-    detail.classList.remove('visible');
-    void detail.offsetWidth;
-    detail.classList.add('visible');
+    document.getElementById('detail').style.display = 'block';
+    window.scrollTo(0, 0);
   }
 
   function navigateTo(view, id) {
