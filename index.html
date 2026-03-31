@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Buildnotes</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,400;0,500;1,400&family=Syne:wght@400;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,400;0,500;1,400&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet" />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -48,33 +48,53 @@
 
     /* ── Header ── */
     header {
-      padding: 56px 0 48px;
-      border-bottom: 1px solid var(--border);
+      padding: 64px 0 56px;
       margin-bottom: 40px;
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-end;
+      border-bottom: 1px solid var(--border);
     }
 
     .logo {
       font-family: var(--font-mono);
-      font-size: 1.1rem;
+      font-size: 1rem;
       font-weight: 500;
       color: var(--accent);
       letter-spacing: -0.03em;
       cursor: pointer;
       user-select: none;
       touch-action: manipulation;
+      display: block;
+      margin-bottom: 20px;
     }
 
     .logo:hover { opacity: 0.8; }
+
+    .tagline {
+      font-family: var(--font-display);
+      font-size: 2rem;
+      font-weight: 800;
+      line-height: 1.1;
+      letter-spacing: -0.04em;
+      color: var(--text);
+      margin-bottom: 12px;
+    }
+
+    .tagline span {
+      color: var(--accent);
+    }
+
+    .tagline-sub {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      letter-spacing: 0.04em;
+    }
 
     /* ── Platform lozenges ── */
     .platforms {
       display: flex;
       flex-wrap: wrap;
       gap: 6px;
-      margin-bottom: 24px;
+      margin-bottom: 16px;
     }
 
     .lozenge {
@@ -85,7 +105,7 @@
       padding: 5px 12px;
       border-radius: 20px;
       border: 1px solid var(--border-light);
-      color: var(--text-secondary);
+      color: var(--text-muted);
       cursor: pointer;
       transition: all 0.12s;
       user-select: none;
@@ -134,18 +154,19 @@
     .search-count {
       font-family: var(--font-mono);
       font-size: 0.7rem;
-      color: var(--text-secondary);
+      color: var(--text-muted);
       text-align: right;
       padding: 6px 4px 24px;
       letter-spacing: 0.04em;
+      min-height: 32px;
     }
 
     /* ── State message ── */
     .state-message {
-      color: var(--text-secondary);
+      color: var(--text-muted);
       font-family: var(--font-mono);
-      font-size: 0.8rem;
-      padding: 56px 0;
+      font-size: 0.78rem;
+      padding: 48px 0;
       text-align: center;
       letter-spacing: 0.03em;
     }
@@ -193,7 +214,7 @@
     .result-meta {
       font-family: var(--font-mono);
       font-size: 0.72rem;
-      color: var(--text-secondary);
+      color: var(--text-muted);
       margin-top: 3px;
       white-space: nowrap;
       overflow: hidden;
@@ -219,7 +240,7 @@
     .result-year {
       font-family: var(--font-mono);
       font-size: 0.68rem;
-      color: var(--text-secondary);
+      color: var(--text-muted);
     }
 
     /* ── Detail view ── */
@@ -239,9 +260,9 @@
       gap: 8px;
       font-family: var(--font-mono);
       font-size: 0.72rem;
-      color: var(--text-secondary);
+      color: var(--text-muted);
       cursor: pointer;
-      margin-bottom: 40px;
+      margin-bottom: 48px;
       text-transform: uppercase;
       letter-spacing: 0.08em;
       background: none;
@@ -253,18 +274,29 @@
 
     .back-btn:hover { color: var(--accent); }
 
+    /* ── Detail header ── */
     .detail-header {
-      margin-bottom: 32px;
-      padding-bottom: 32px;
+      margin-bottom: 40px;
+      padding-bottom: 40px;
       border-bottom: 1px solid var(--border);
     }
 
+    .detail-eyebrow {
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--accent);
+      margin-bottom: 12px;
+    }
+
     .detail-title {
-      font-size: 2rem;
-      font-weight: 700;
-      line-height: 1.15;
-      letter-spacing: -0.03em;
-      margin-bottom: 16px;
+      font-size: 2.4rem;
+      font-weight: 800;
+      line-height: 1.1;
+      letter-spacing: -0.04em;
+      color: var(--text);
+      margin-bottom: 20px;
     }
 
     .detail-badges {
@@ -276,12 +308,12 @@
 
     .badge {
       font-family: var(--font-mono);
-      font-size: 0.72rem;
+      font-size: 0.7rem;
       letter-spacing: 0.04em;
       padding: 4px 10px;
       border-radius: 4px;
       border: 1px solid var(--border-light);
-      color: var(--text-secondary);
+      color: var(--text-muted);
     }
 
     .badge-accent {
@@ -292,7 +324,7 @@
 
     /* ── Info table ── */
     .info-table {
-      margin-bottom: 32px;
+      margin-bottom: 40px;
       display: flex;
       flex-direction: column;
       border: 1px solid var(--border);
@@ -302,7 +334,7 @@
 
     .info-row {
       display: grid;
-      grid-template-columns: 130px 1fr;
+      grid-template-columns: 120px 1fr;
       border-bottom: 1px solid var(--border);
     }
 
@@ -310,21 +342,22 @@
 
     .info-label {
       font-family: var(--font-mono);
-      font-size: 0.68rem;
+      font-size: 0.65rem;
       text-transform: uppercase;
-      letter-spacing: 0.09em;
-      color: var(--text-secondary);
+      letter-spacing: 0.1em;
+      color: var(--text-muted);
       background: var(--bg-raised);
-      padding: 13px 18px;
+      padding: 14px 18px;
       display: flex;
       align-items: center;
     }
 
     .info-value {
       font-size: 0.875rem;
+      font-weight: 500;
       color: var(--text-secondary);
       background: var(--bg-card);
-      padding: 13px 18px;
+      padding: 14px 18px;
       display: flex;
       align-items: center;
       line-height: 1.5;
@@ -339,19 +372,25 @@
     .info-value a:hover { text-decoration: underline; }
 
     /* ── Summary / Notes ── */
-    .detail-summary-label {
-      font-family: var(--font-mono);
-      font-size: 0.68rem;
-      text-transform: uppercase;
-      letter-spacing: 0.09em;
-      color: var(--text-secondary);
-      margin-bottom: 12px;
+    .detail-section {
+      margin-bottom: 36px;
     }
 
-    .detail-summary {
-      font-size: 0.9rem;
+    .detail-section-label {
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--text-muted);
+      margin-bottom: 14px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .detail-section-body {
+      font-size: 0.925rem;
       color: var(--text-secondary);
-      line-height: 1.8;
+      line-height: 1.85;
     }
 
     /* ── Footer ── */
@@ -360,7 +399,7 @@
       padding: 20px 0 48px;
       font-family: var(--font-mono);
       font-size: 0.68rem;
-      color: var(--text-secondary);
+      color: var(--text-muted);
       letter-spacing: 0.06em;
       display: flex;
       justify-content: space-between;
@@ -369,11 +408,12 @@
 
     /* ── Responsive ── */
     @media (max-width: 500px) {
-      header { padding: 36px 0 32px; }
-      .detail-title { font-size: 1.5rem; }
+      header { padding: 48px 0 40px; }
+      .tagline { font-size: 1.6rem; }
+      .detail-title { font-size: 1.75rem; }
       .info-row { grid-template-columns: 90px 1fr; }
-      .info-label { padding: 11px 12px; font-size: 0.62rem; }
-      .info-value { padding: 11px 12px; }
+      .info-label { padding: 12px; font-size: 0.6rem; }
+      .info-value { padding: 12px; }
     }
   </style>
 </head>
@@ -381,6 +421,8 @@
 <div id="app">
   <header>
     <span class="logo" id="logo">buildnotes</span>
+    <div class="tagline">The facts.<br><span>Nothing else.</span></div>
+    <div class="tagline-sub">Fast game lookup across PS4, PS5, Xbox One &amp; Xbox Series X|S</div>
   </header>
 
   <div id="search-view">
@@ -509,7 +551,6 @@
       ['Genres',    game.genres.length     ? game.genres.join(', ')     : null],
     ].filter(([, v]) => v);
 
-    // Custom links from custom.json only
     if (custom.links && custom.links.length) {
       const linkHtml = custom.links.map(l =>
         `<a href="${esc(l.url)}" target="_blank" rel="noopener">${esc(l.label)}</a>`
@@ -518,14 +559,15 @@
     }
 
     const genres = game.genres.slice(0, 3);
+    const year = game.release_date ? game.release_date.slice(0, 4) : null;
 
     document.getElementById('detail').innerHTML = `
       <button class="back-btn" onclick="navigateTo('search')">← back to search</button>
       <div class="detail-header">
+        ${year ? `<div class="detail-eyebrow">${year}</div>` : ''}
         <div class="detail-title">${esc(game.title)}</div>
         <div class="detail-badges">
           ${game.rating ? `<span class="badge badge-accent">rated ${game.rating}</span>` : ''}
-          ${game.release_date ? `<span class="badge">${game.release_date.slice(0,4)}</span>` : ''}
           ${genres.map(g => `<span class="badge">${esc(g)}</span>`).join('')}
         </div>
       </div>
@@ -538,15 +580,15 @@
         `).join('')}
       </div>
       ${custom.notes ? `
-        <div style="margin-bottom:32px">
-          <div class="detail-summary-label">Notes</div>
-          <div class="detail-summary">${esc(custom.notes)}</div>
+        <div class="detail-section">
+          <div class="detail-section-label">Notes</div>
+          <div class="detail-section-body">${esc(custom.notes)}</div>
         </div>
       ` : ''}
       ${game.summary ? `
-        <div>
-          <div class="detail-summary-label">Summary</div>
-          <div class="detail-summary">${esc(game.summary)}</div>
+        <div class="detail-section">
+          <div class="detail-section-label">Summary</div>
+          <div class="detail-section-body">${esc(game.summary)}</div>
         </div>
       ` : ''}
     `;
