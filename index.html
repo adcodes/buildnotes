@@ -17,8 +17,9 @@
       --border: #232328;
       --border-light: #2a2a30;
       --text: #ececf0;
-      --text-secondary: #a0a0ab;
-      --text-muted: #55555f;
+      --text-secondary: #c0c0c8;
+      --text-muted: #8a8a96;
+      --text-faint: #8a8a96;
       --accent: #60a5fa;
       --accent-glow: rgba(96, 165, 250, 0.08);
       --accent-dim: rgba(96, 165, 250, 0.15);
@@ -81,7 +82,7 @@
       padding: 5px 12px;
       border-radius: 20px;
       border: 1px solid var(--border-light);
-      color: var(--text-muted);
+      color: var(--text-secondary);
       cursor: pointer;
       transition: all 0.12s;
       user-select: none;
@@ -128,10 +129,20 @@
     .search-count {
       font-family: var(--font-mono);
       font-size: 0.7rem;
-      color: var(--text-muted);
+      color: var(--text-secondary);
       text-align: right;
       padding: 6px 4px 24px;
       letter-spacing: 0.04em;
+    }
+
+    /* ── State message ── */
+    .state-message {
+      color: var(--text-secondary);
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      padding: 56px 0;
+      text-align: center;
+      letter-spacing: 0.03em;
     }
 
     /* ── Results ── */
@@ -173,7 +184,7 @@
     .result-meta {
       font-family: var(--font-mono);
       font-size: 0.72rem;
-      color: var(--text-muted);
+      color: var(--text-secondary);
       margin-top: 3px;
       white-space: nowrap;
       overflow: hidden;
@@ -199,17 +210,7 @@
     .result-year {
       font-family: var(--font-mono);
       font-size: 0.68rem;
-      color: var(--text-muted);
-    }
-
-    /* ── State messages ── */
-    .state-message {
-      color: var(--text-muted);
-      font-family: var(--font-mono);
-      font-size: 0.8rem;
-      padding: 56px 0;
-      text-align: center;
-      letter-spacing: 0.03em;
+      color: var(--text-secondary);
     }
 
     /* ── Detail view ── */
@@ -229,7 +230,7 @@
       gap: 8px;
       font-family: var(--font-mono);
       font-size: 0.72rem;
-      color: var(--text-muted);
+      color: var(--text-secondary);
       cursor: pointer;
       margin-bottom: 40px;
       text-transform: uppercase;
@@ -302,7 +303,7 @@
       font-size: 0.68rem;
       text-transform: uppercase;
       letter-spacing: 0.09em;
-      color: var(--text-muted);
+      color: var(--text-secondary);
       background: var(--bg-raised);
       padding: 13px 18px;
       display: flex;
@@ -332,14 +333,13 @@
       font-size: 0.68rem;
       text-transform: uppercase;
       letter-spacing: 0.09em;
-      color: var(--text-muted);
+      color: var(--text-secondary);
       margin-bottom: 12px;
-      opacity: 0.6;
     }
 
     .detail-summary {
       font-size: 0.9rem;
-      color: var(--text-muted);
+      color: var(--text-secondary);
       line-height: 1.8;
     }
 
@@ -349,7 +349,7 @@
       padding: 20px 0 48px;
       font-family: var(--font-mono);
       font-size: 0.68rem;
-      color: var(--text-muted);
+      color: var(--text-secondary);
       letter-spacing: 0.06em;
       display: flex;
       justify-content: space-between;
@@ -371,7 +371,6 @@
   </header>
 
   <div id="search-view">
-    <!-- Platform lozenges -->
     <div class="platforms">
       <span class="lozenge active" data-platform="">All</span>
       <span class="lozenge" data-platform="PlayStation 5">PS5</span>
@@ -402,7 +401,6 @@
   let activePlatform = '';
   let customData = {};
 
-  // Load games and custom data in parallel
   Promise.all([
     fetch('games.json').then(r => r.json()),
     fetch('custom.json').then(r => r.json()).catch(() => ({}))
@@ -415,7 +413,6 @@
     router();
   });
 
-  // Platform lozenges
   document.querySelectorAll('.lozenge').forEach(el => {
     el.addEventListener('click', () => {
       document.querySelectorAll('.lozenge').forEach(l => l.classList.remove('active'));
@@ -425,17 +422,12 @@
     });
   });
 
-  // Search
   const searchInput = document.getElementById('search-input');
-
   searchInput.addEventListener('input', updateResults);
 
   function filteredGames() {
-    let pool = games;
-    if (activePlatform) {
-      pool = pool.filter(g => g.platforms && g.platforms.includes(activePlatform));
-    }
-    return pool;
+    if (!activePlatform) return games;
+    return games.filter(g => g.platforms && g.platforms.includes(activePlatform));
   }
 
   function updateCount() {
@@ -456,8 +448,7 @@
     }
 
     const matches = search(q, pool, 10);
-    const countEl = document.getElementById('search-count');
-    countEl.textContent = matches.length
+    document.getElementById('search-count').textContent = matches.length
       ? `${matches.length} result${matches.length === 1 ? '' : 's'}`
       : '';
     renderResults(matches, q);
@@ -483,21 +474,19 @@
           <div class="result-meta">${esc(g.developers[0] || g.publishers[0] || '—')}</div>
         </div>
         <div class="result-right">
-          ${g.rating      ? `<div class="result-rating">${g.rating}</div>` : ''}
+          ${g.rating       ? `<div class="result-rating">${g.rating}</div>` : ''}
           ${g.release_date ? `<div class="result-year">${g.release_date.slice(0,4)}</div>` : ''}
         </div>
       </div>
     `).join('');
   }
 
-  // Detail view
   function renderDetail(id) {
     const game = games.find(g => g.id === id);
     if (!game) return showSearch();
 
     document.title = `${game.title} — buildnotes`;
     const custom = customData[String(id)] || {};
-
     const mobyUrl = `https://www.mobygames.com/search/?q=${encodeURIComponent(game.title)}`;
 
     const rows = [
@@ -509,7 +498,6 @@
       ['MobyGames', `<a href="${mobyUrl}" target="_blank" rel="noopener">View on MobyGames ↗</a>`],
     ].filter(([, v]) => v);
 
-    // Custom links
     const customLinks = (custom.links || []).map(l =>
       `<a href="${esc(l.url)}" target="_blank" rel="noopener">${esc(l.label)} ↗</a>`
     ).join('  ·  ');
