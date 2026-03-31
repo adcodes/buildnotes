@@ -65,15 +65,37 @@
 
     .logo:hover { opacity: 0.8; }
 
-    .header-tag {
+    /* ── Platform lozenges ── */
+    .platforms {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 24px;
+    }
+
+    .lozenge {
       font-family: var(--font-mono);
       font-size: 0.68rem;
-      color: var(--text-muted);
-      letter-spacing: 0.1em;
+      letter-spacing: 0.06em;
       text-transform: uppercase;
-      padding: 4px 10px;
-      border: 1px solid var(--border-light);
+      padding: 5px 12px;
       border-radius: 20px;
+      border: 1px solid var(--border-light);
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.12s;
+      user-select: none;
+    }
+
+    .lozenge:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .lozenge.active {
+      background: var(--accent-dim);
+      border-color: var(--accent);
+      color: var(--accent);
     }
 
     /* ── Search ── */
@@ -262,7 +284,6 @@
       margin-bottom: 32px;
       display: flex;
       flex-direction: column;
-      gap: 0;
       border: 1px solid var(--border);
       border-radius: var(--radius);
       overflow: hidden;
@@ -298,13 +319,14 @@
       line-height: 1.5;
     }
 
-    /* ── Summary ── */
-    .detail-summary {
-      font-size: 0.9rem;
-      color: var(--text-muted);
-      line-height: 1.8;
+    .info-value a {
+      color: var(--accent);
+      text-decoration: none;
     }
 
+    .info-value a:hover { text-decoration: underline; }
+
+    /* ── Summary ── */
     .detail-summary-label {
       font-family: var(--font-mono);
       font-size: 0.68rem;
@@ -315,10 +337,16 @@
       opacity: 0.6;
     }
 
+    .detail-summary {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      line-height: 1.8;
+    }
+
     /* ── Footer ── */
     footer {
       margin-top: 80px;
-      padding-bottom: 48px;
+      padding: 20px 0 48px;
       font-family: var(--font-mono);
       font-size: 0.68rem;
       color: var(--text-muted);
@@ -326,14 +354,13 @@
       display: flex;
       justify-content: space-between;
       border-top: 1px solid var(--border);
-      padding-top: 20px;
     }
 
     /* ── Responsive ── */
     @media (max-width: 500px) {
       header { padding: 36px 0 32px; }
       .detail-title { font-size: 1.5rem; }
-      .info-table { grid-template-columns: 100px 1fr; }
+      .info-row { grid-template-columns: 100px 1fr; }
     }
   </style>
 </head>
@@ -341,10 +368,18 @@
 <div id="app">
   <header>
     <span class="logo" id="logo">buildnotes</span>
-    <span class="header-tag">PS5</span>
   </header>
 
   <div id="search-view">
+    <!-- Platform lozenges -->
+    <div class="platforms">
+      <span class="lozenge active" data-platform="">All</span>
+      <span class="lozenge" data-platform="PlayStation 5">PS5</span>
+      <span class="lozenge" data-platform="PlayStation 4">PS4</span>
+      <span class="lozenge" data-platform="Xbox One">Xbox One</span>
+      <span class="lozenge" data-platform="Xbox Series X|S">Xbox Series X|S</span>
+    </div>
+
     <div class="search-wrap">
       <input id="search-input" type="text" placeholder="Search games…" autocomplete="off" spellcheck="false" />
     </div>
@@ -364,66 +399,106 @@
 
 <script>
   let games = [];
+  let activePlatform = '';
+  let customData = {};
 
-  fetch('data.json')
-    .then(r => r.json())
-    .then(data => {
-      games = data.games;
-      document.getElementById('footer-left').textContent = 'buildnotes';
-      document.getElementById('footer-right').textContent = `${games.length.toLocaleString()} games · ${data.last_updated}`;
-      document.getElementById('search-count').textContent = `${games.length.toLocaleString()} ps5 games`;
-      router();
+  // Load games and custom data in parallel
+  Promise.all([
+    fetch('games.json').then(r => r.json()),
+    fetch('custom.json').then(r => r.json()).catch(() => ({}))
+  ]).then(([data, custom]) => {
+    games = data.games;
+    customData = custom;
+    document.getElementById('footer-right').textContent =
+      `${games.length.toLocaleString()} games · ${data.last_updated}`;
+    updateCount();
+    router();
+  });
+
+  // Platform lozenges
+  document.querySelectorAll('.lozenge').forEach(el => {
+    el.addEventListener('click', () => {
+      document.querySelectorAll('.lozenge').forEach(l => l.classList.remove('active'));
+      el.classList.add('active');
+      activePlatform = el.dataset.platform;
+      updateResults();
     });
+  });
 
+  // Search
   const searchInput = document.getElementById('search-input');
-  const resultsEl   = document.getElementById('results');
-  const countEl     = document.getElementById('search-count');
 
-  searchInput.addEventListener('input', () => {
+  searchInput.addEventListener('input', updateResults);
+
+  function filteredGames() {
+    let pool = games;
+    if (activePlatform) {
+      pool = pool.filter(g => g.platforms && g.platforms.includes(activePlatform));
+    }
+    return pool;
+  }
+
+  function updateCount() {
+    const pool = filteredGames();
+    document.getElementById('search-count').textContent =
+      `${pool.length.toLocaleString()} games`;
+  }
+
+  function updateResults() {
     const q = searchInput.value.trim();
+    const pool = filteredGames();
+    updateCount();
+
     if (!q) {
-      resultsEl.innerHTML = `<div class="state-message">— start typing —</div>`;
-      countEl.textContent = `${games.length.toLocaleString()} ps5 games`;
+      document.getElementById('results').innerHTML =
+        `<div class="state-message">— start typing —</div>`;
       return;
     }
-    const matches = search(q, 10);
+
+    const matches = search(q, pool, 10);
+    const countEl = document.getElementById('search-count');
     countEl.textContent = matches.length
       ? `${matches.length} result${matches.length === 1 ? '' : 's'}`
       : '';
     renderResults(matches, q);
-  });
+  }
 
-  function search(query, limit) {
+  function search(query, pool, limit) {
     const q = query.toLowerCase();
-    return games
+    return pool
       .filter(g => g.title && g.title.toLowerCase().includes(q))
       .slice(0, limit);
   }
 
   function renderResults(matches, query) {
+    const el = document.getElementById('results');
     if (!matches.length) {
-      resultsEl.innerHTML = `<div class="state-message">no results for "${esc(query)}"</div>`;
+      el.innerHTML = `<div class="state-message">no results for "${esc(query)}"</div>`;
       return;
     }
-    resultsEl.innerHTML = matches.map(g => `
+    el.innerHTML = matches.map(g => `
       <div class="result-item" onclick="navigateTo('game',${g.id})">
         <div style="min-width:0">
           <div class="result-title">${esc(g.title)}</div>
           <div class="result-meta">${esc(g.developers[0] || g.publishers[0] || '—')}</div>
         </div>
         <div class="result-right">
-          ${g.rating    ? `<div class="result-rating">${g.rating}</div>` : ''}
+          ${g.rating      ? `<div class="result-rating">${g.rating}</div>` : ''}
           ${g.release_date ? `<div class="result-year">${g.release_date.slice(0,4)}</div>` : ''}
         </div>
       </div>
     `).join('');
   }
 
+  // Detail view
   function renderDetail(id) {
     const game = games.find(g => g.id === id);
     if (!game) return showSearch();
 
     document.title = `${game.title} — buildnotes`;
+    const custom = customData[String(id)] || {};
+
+    const mobyUrl = `https://www.mobygames.com/search/?q=${encodeURIComponent(game.title)}`;
 
     const rows = [
       ['Released',  game.release_date || null],
@@ -431,7 +506,15 @@
       ['Publisher', game.publishers.length ? game.publishers.join(', ') : null],
       ['Platforms', game.platforms.length  ? game.platforms.join(', ')  : null],
       ['Genres',    game.genres.length     ? game.genres.join(', ')     : null],
+      ['MobyGames', `<a href="${mobyUrl}" target="_blank" rel="noopener">View on MobyGames ↗</a>`],
     ].filter(([, v]) => v);
+
+    // Custom links
+    const customLinks = (custom.links || []).map(l =>
+      `<a href="${esc(l.url)}" target="_blank" rel="noopener">${esc(l.label)} ↗</a>`
+    ).join('  ·  ');
+
+    if (customLinks) rows.push(['Links', customLinks]);
 
     const genres = game.genres.slice(0, 3);
 
@@ -449,10 +532,16 @@
         ${rows.map(([label, value]) => `
           <div class="info-row">
             <div class="info-label">${label}</div>
-            <div class="info-value">${esc(value)}</div>
+            <div class="info-value">${typeof value === 'string' && value.startsWith('<') ? value : esc(value)}</div>
           </div>
         `).join('')}
       </div>
+      ${custom.notes ? `
+        <div style="margin-bottom:32px">
+          <div class="detail-summary-label">Notes</div>
+          <div class="detail-summary">${esc(custom.notes)}</div>
+        </div>
+      ` : ''}
       ${game.summary ? `
         <div>
           <div class="detail-summary-label">Summary</div>
