@@ -512,7 +512,7 @@
     // Custom links from custom.json only
     if (custom.links && custom.links.length) {
       const linkHtml = custom.links.map(l =>
-        `<a href="${esc(l.url)}" target="_blank" rel="noopener">${esc(l.label)} ↗</a>`
+        `<a href="${esc(l.url)}" target="_blank" rel="noopener">${esc(l.label)}</a>`
       ).join('  ·  ');
       rows.push(['Links', linkHtml]);
     }
