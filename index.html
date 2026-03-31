@@ -13,6 +13,8 @@
       --bg: #0c0c0f;
       --bg-raised: #131316;
       --bg-card: #16161a;
+      --bg-card-alt: #1a1a1f;
+      --bg-label-alt: #111114;
       --bg-hover: #1c1c21;
       --border: #232328;
       --border-light: #2a2a30;
@@ -48,12 +50,15 @@
 
     /* ── Header ── */
     header {
-      padding: 56px 0 48px;
+      padding: 56px 0 40px;
       border-bottom: 1px solid var(--border);
       margin-bottom: 40px;
+    }
+
+    .header-top {
       display: flex;
-      justify-content: space-between;
-      align-items: flex-end;
+      align-items: baseline;
+      gap: 16px;
     }
 
     .logo {
@@ -65,16 +70,45 @@
       cursor: pointer;
       user-select: none;
       touch-action: manipulation;
+      flex-shrink: 0;
     }
 
     .logo:hover { opacity: 0.8; }
 
-    /* ── Platform lozenges ── */
+    .header-explainer {
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      font-weight: 500;
+      color: var(--text-secondary);
+      letter-spacing: 0.01em;
+    }
+
+    /* ── Platform lozenges — horizontal scroll ── */
+    .platforms-wrap {
+      position: relative;
+      margin-bottom: 24px;
+    }
+
     .platforms {
       display: flex;
-      flex-wrap: wrap;
       gap: 6px;
-      margin-bottom: 24px;
+      overflow-x: auto;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+      padding-bottom: 2px;
+    }
+
+    .platforms::-webkit-scrollbar { display: none; }
+
+    .platforms-wrap::after {
+      content: '';
+      position: absolute;
+      right: 0;
+      top: 0;
+      bottom: 2px;
+      width: 40px;
+      background: linear-gradient(to right, transparent, var(--bg));
+      pointer-events: none;
     }
 
     .lozenge {
@@ -85,11 +119,13 @@
       padding: 5px 12px;
       border-radius: 20px;
       border: 1px solid var(--border-light);
-      color: var(--text-secondary);
+      color: var(--text-muted);
       cursor: pointer;
       transition: all 0.12s;
       user-select: none;
       touch-action: manipulation;
+      white-space: nowrap;
+      flex-shrink: 0;
     }
 
     .lozenge:hover {
@@ -134,7 +170,7 @@
     .search-count {
       font-family: var(--font-mono);
       font-size: 0.7rem;
-      color: var(--text-secondary);
+      color: var(--text-muted);
       text-align: right;
       padding: 6px 4px 24px;
       letter-spacing: 0.04em;
@@ -142,12 +178,13 @@
 
     /* ── State message ── */
     .state-message {
-      color: var(--text-secondary);
+      color: var(--text-muted);
       font-family: var(--font-mono);
-      font-size: 0.8rem;
-      padding: 56px 0;
+      font-size: 0.78rem;
+      padding: 48px 0 52px;
       text-align: center;
       letter-spacing: 0.03em;
+      line-height: 2;
     }
 
     /* ── Results ── */
@@ -155,6 +192,15 @@
       display: flex;
       flex-direction: column;
       gap: 3px;
+    }
+
+    #results.fade-in {
+      animation: fadeIn 0.15s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to   { opacity: 1; transform: translateY(0); }
     }
 
     .result-item {
@@ -180,6 +226,13 @@
       }
     }
 
+    @media (hover: none) {
+      .result-item:active {
+        background: var(--bg-hover);
+        transform: scale(0.99);
+      }
+    }
+
     .result-title {
       font-size: 0.95rem;
       font-weight: 600;
@@ -193,7 +246,7 @@
     .result-meta {
       font-family: var(--font-mono);
       font-size: 0.72rem;
-      color: var(--text-secondary);
+      color: var(--text-muted);
       margin-top: 3px;
       white-space: nowrap;
       overflow: hidden;
@@ -219,12 +272,16 @@
     .result-year {
       font-family: var(--font-mono);
       font-size: 0.68rem;
-      color: var(--text-secondary);
+      color: var(--text-muted);
     }
 
     /* ── Detail view ── */
     #detail {
       display: none;
+    }
+
+    #detail.visible {
+      display: block;
       animation: fadeUp 0.18s ease;
     }
 
@@ -233,26 +290,29 @@
       to   { opacity: 1; transform: translateY(0); }
     }
 
+    /* ── Back button ── */
     .back-btn {
       display: inline-flex;
       align-items: center;
       gap: 8px;
       font-family: var(--font-mono);
       font-size: 0.72rem;
-      color: var(--text-secondary);
+      color: var(--text-muted);
       cursor: pointer;
       margin-bottom: 40px;
       text-transform: uppercase;
       letter-spacing: 0.08em;
       background: none;
       border: none;
-      padding: 0;
+      border-left: 2px solid var(--accent);
+      padding: 4px 0 4px 12px;
       transition: color 0.1s;
       touch-action: manipulation;
     }
 
     .back-btn:hover { color: var(--accent); }
 
+    /* ── Detail header ── */
     .detail-header {
       margin-bottom: 32px;
       padding-bottom: 32px;
@@ -290,7 +350,7 @@
       border-color: transparent;
     }
 
-    /* ── Info table ── */
+    /* ── Info table — zebra striped ── */
     .info-table {
       margin-bottom: 32px;
       display: flex;
@@ -308,13 +368,17 @@
 
     .info-row:last-child { border-bottom: none; }
 
+    .info-row:nth-child(odd) .info-label  { background: var(--bg-raised); }
+    .info-row:nth-child(odd) .info-value  { background: var(--bg-card); }
+    .info-row:nth-child(even) .info-label { background: var(--bg-label-alt); }
+    .info-row:nth-child(even) .info-value { background: var(--bg-card-alt); }
+
     .info-label {
       font-family: var(--font-mono);
       font-size: 0.68rem;
       text-transform: uppercase;
       letter-spacing: 0.09em;
-      color: var(--text-secondary);
-      background: var(--bg-raised);
+      color: var(--text-muted);
       padding: 13px 18px;
       display: flex;
       align-items: center;
@@ -323,11 +387,10 @@
     .info-value {
       font-size: 0.875rem;
       color: var(--text-secondary);
-      background: var(--bg-card);
       padding: 13px 18px;
       display: flex;
       align-items: center;
-      line-height: 1.5;
+      line-height: 1.6;
       word-break: break-word;
     }
 
@@ -344,7 +407,7 @@
       font-size: 0.68rem;
       text-transform: uppercase;
       letter-spacing: 0.09em;
-      color: var(--text-secondary);
+      color: var(--text-muted);
       margin-bottom: 12px;
     }
 
@@ -360,7 +423,7 @@
       padding: 20px 0 48px;
       font-family: var(--font-mono);
       font-size: 0.68rem;
-      color: var(--text-secondary);
+      color: var(--text-muted);
       letter-spacing: 0.06em;
       display: flex;
       justify-content: space-between;
@@ -380,24 +443,29 @@
 <body>
 <div id="app">
   <header>
-    <span class="logo" id="logo">buildnotes</span>
+    <div class="header-top">
+      <span class="logo" id="logo">buildnotes</span>
+      <span class="header-explainer">Quick video game lookup.</span>
+    </div>
   </header>
 
   <div id="search-view">
-    <div class="platforms">
-      <span class="lozenge active" data-platform="">All</span>
-      <span class="lozenge" data-platform="PlayStation 5">PS5</span>
-      <span class="lozenge" data-platform="PlayStation 4">PS4</span>
-      <span class="lozenge" data-platform="Xbox One">Xbox One</span>
-      <span class="lozenge" data-platform="Xbox Series X|S">Xbox Series X|S</span>
+    <div class="platforms-wrap">
+      <div class="platforms">
+        <span class="lozenge active" data-platform="">All</span>
+        <span class="lozenge" data-platform="PlayStation 5">PS5</span>
+        <span class="lozenge" data-platform="PlayStation 4">PS4</span>
+        <span class="lozenge" data-platform="Xbox One">Xbox One</span>
+        <span class="lozenge" data-platform="Xbox Series X|S">Xbox Series X|S</span>
+      </div>
     </div>
 
     <div class="search-wrap">
-      <input id="search-input" type="text" placeholder="Search games…" autocomplete="off" spellcheck="false" />
+      <input id="search-input" type="text" placeholder="Type a game title to begin…" autocomplete="off" spellcheck="false" />
     </div>
     <div class="search-count" id="search-count"></div>
     <div id="results">
-      <div class="state-message">— start typing —</div>
+      <div class="state-message">type a game title to begin</div>
     </div>
   </div>
 
@@ -456,7 +524,7 @@
 
     if (!q) {
       document.getElementById('results').innerHTML =
-        `<div class="state-message">— start typing —</div>`;
+        `<div class="state-message">type a game title to begin</div>`;
       return;
     }
 
@@ -478,6 +546,7 @@
     const el = document.getElementById('results');
     if (!matches.length) {
       el.innerHTML = `<div class="state-message">no results for "${esc(query)}"</div>`;
+      el.classList.remove('fade-in');
       return;
     }
     el.innerHTML = matches.map(g => `
@@ -492,6 +561,10 @@
         </div>
       </div>
     `).join('');
+
+    el.classList.remove('fade-in');
+    void el.offsetWidth;
+    el.classList.add('fade-in');
   }
 
   function renderDetail(id) {
@@ -509,7 +582,6 @@
       ['Genres',    game.genres.length     ? game.genres.join(', ')     : null],
     ].filter(([, v]) => v);
 
-    // Custom links from custom.json only
     if (custom.links && custom.links.length) {
       const linkHtml = custom.links.map(l =>
         `<a href="${esc(l.url)}" target="_blank" rel="noopener">${esc(l.label)}</a>`
@@ -556,13 +628,18 @@
 
   function showSearch() {
     document.getElementById('search-view').style.display = '';
-    document.getElementById('detail').style.display = 'none';
+    const detail = document.getElementById('detail');
+    detail.classList.remove('visible');
+    detail.style.display = 'none';
     document.title = 'buildnotes';
   }
 
   function showDetail() {
     document.getElementById('search-view').style.display = 'none';
-    document.getElementById('detail').style.display = 'block';
+    const detail = document.getElementById('detail');
+    detail.classList.remove('visible');
+    void detail.offsetWidth;
+    detail.classList.add('visible');
   }
 
   function navigateTo(view, id) {
